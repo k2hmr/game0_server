@@ -3,7 +3,7 @@ version: "3.8"
 services:
   server:
     build:
-      context: ./server
+      context: .
       dockerfile: Dockerfile
     stdin_open: true
     tty: true
@@ -11,5 +11,5 @@ services:
       - 80:80
     volumes:
       - type: bind
-        source: server/src
+        source: ./src
         target: /go/app/src
