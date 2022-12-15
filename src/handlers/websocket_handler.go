@@ -19,6 +19,12 @@ func NewWebsocketHandler(hub *domain.Hub) *WebsocketHandler {
 }
 
 func (h *WebsocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
+	name, ok := r.URL.Query()["name"]
+	if !ok || len(name[0]) < 1 {
+		log.Println("Url Param 'name' is missing")
+		return
+	}
+
 	upgrader := &websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -29,7 +35,7 @@ func (h *WebsocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	client := domain.NewClient(ws)
+	client := domain.NewClient(ws, name[0])
 	go client.ReadLoop(h.hub.BroadcastCh, h.hub.UnRegisterCh)
 	go client.WriteLoop()
 	h.hub.RegisterCh <- client

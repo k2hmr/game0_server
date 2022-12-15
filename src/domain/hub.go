@@ -5,6 +5,7 @@ type Hub struct {
 	RegisterCh   chan *Client
 	UnRegisterCh chan *Client
 	BroadcastCh  chan []byte
+	Rooms      map[*Room]bool
 }
 
 func NewHub() *Hub {
@@ -13,6 +14,7 @@ func NewHub() *Hub {
 		RegisterCh:   make(chan *Client),
 		UnRegisterCh: make(chan *Client),
 		BroadcastCh:  make(chan []byte),
+		Rooms:      make(map[*Room]bool),
 	}
 }
 
@@ -43,4 +45,24 @@ func (h *Hub) broadCastToAllClient(msg []byte) {
 	for c := range h.Clients {
 		c.sendCh <- msg
 	}
+}
+
+func (h *Hub) findRoomByName(name string) *Room {
+	var foundRoom *Room
+	for room := range h.Rooms {
+			if room.GetName() == name {
+					foundRoom = room
+					break
+			}
+	}
+
+	return foundRoom
+}
+
+func (h *Hub) createRoom(name string) *Room {
+	room := NewRoom(name)
+	go room.RunRoom()
+	h.Rooms[room] = true
+
+	return room
 }
